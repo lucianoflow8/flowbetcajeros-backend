@@ -48,11 +48,11 @@ def crear_usuario(
     if not token:
         return {"error": "No se pudo obtener el token"}
 
-    # ✅ Guardar teléfono para marketing futuro
+    # Guardar teléfono para marketing futuro
     guardar_telefono(username, telefono)
 
     headers = {
-        "Authorization": f"Bearer {token}"
+        "Content-Type": "application/x-www-form-urlencoded"
     }
 
     data = {
@@ -60,22 +60,14 @@ def crear_usuario(
         "Password": password,
         "RepeatPassword": password,
         "Email": "",
-        "Phone": telefono
+        "Phone": telefono,
+        "token": token
     }
 
     try:
         res = requests.post("https://local-admin.flowbets.co/crear_jugador", data=data, headers=headers)
         res.raise_for_status()
-        return {
-            "status": "success",
-            "message": f"Apostador y Capital creados con éxito",
-            "userId": "verificá en panel",
-            "externalApiResponse": {
-                "success": True,
-                "message": f"Contraseña correctamente actualizada: {username} {password}"
-            },
-            "messages": []
-        }
+        return {"mensaje": "Usuario creado exitosamente"}
     except Exception as e:
         return {
             "error": "Error en la creación",
