@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Form
 import requests
+import csv
+import os
 
 app = FastAPI()
 
@@ -26,16 +28,28 @@ def get_token():
         print("Error al obtener el token:", e)
         return None
 
+def guardar_telefono(username, telefono):
+    archivo = "telefonos.csv"
+    existe = os.path.isfile(archivo)
+    with open(archivo, mode="a", newline="") as f:
+        writer = csv.writer(f)
+        if not existe:
+            writer.writerow(["username", "telefono"])
+        writer.writerow([username, telefono])
+
 @app.post("/crear_usuario")
 def crear_usuario(
     username: str = Form(...),
     password: str = Form(...),
     telefono: str = Form(...)
 ):
-    print(f"Creando usuario: {username}")
+    print(f"Creando usuario: {username} con teléfono {telefono}")
     token = get_token()
     if not token:
-        return {"error": "No se pudo obtener el token. Revisá credenciales o login."}
+        return {"error": "No se pudo obtener el token"}
+
+    # ✅ Guardar teléfono para marketing futuro
+    guardar_telefono(username, telefono)
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -47,7 +61,6 @@ def crear_usuario(
         "password": password,
         "email": "",
         "firstname": "-",
-        "phone": telefono,
         "login_Id": 2017,
         "site": "86240",
         "token": token,
@@ -62,7 +75,6 @@ def crear_usuario(
         res.raise_for_status()
         return res.json()
     except Exception as e:
-        print("Error al crear usuario:", e)
         return {
             "error": "Error en la creación",
             "detalle": str(e),
