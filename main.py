@@ -47,7 +47,7 @@ def crear_usuario(username: str = Form(...), password: str = Form(...)):
     }
 
     try:
-        res = requests.post("https://admin.flowbets.co/api/player/create", json=payload, headers=headers)
+        res = requests.post("https://local-admin.flowbets.co/crear_jugador", json=payload, headers=headers)
         res.raise_for_status()
         return res.json()
     except Exception as e:
