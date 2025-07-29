@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Form
+from fastapi.responses import JSONResponse
 import requests
 import csv
 import os
@@ -48,9 +49,8 @@ def crear_usuario(
 ):
     token = get_token()
     if not token:
-        return {"error": "No se pudo obtener el token."}
+        return JSONResponse(content={"error": "No se pudo obtener el token."}, status_code=500)
 
-    # ✅ Guardamos el número internamente
     guardar_telefono(username, telefono)
 
     headers = {
@@ -78,10 +78,13 @@ def crear_usuario(
     try:
         res = requests.post("https://local-admin.flowbets.co/crear_jugador", json=payload, headers=headers)
         res.raise_for_status()
-        return res.json()
+        return JSONResponse(content={"success": True, "mensaje": "Usuario creado correctamente"}, status_code=200)
     except Exception as e:
-        return {
-            "error": "Error en la creación",
-            "detalle": str(e),
-            "response": res.text if 'res' in locals() else "No hay respuesta"
-        }
+        return JSONResponse(
+            content={
+                "error": "Error en la creación",
+                "detalle": str(e),
+                "response": res.text if 'res' in locals() else "No hay respuesta"
+            },
+            status_code=500
+        )
