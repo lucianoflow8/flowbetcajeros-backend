@@ -1,0 +1,6 @@
+{
+  "mostrar_crear_usuario": true,
+  "mostrar_retirar_saldo": true,
+  "promocion_activa": false,
+  "factor_promocion": 1.0
+}
