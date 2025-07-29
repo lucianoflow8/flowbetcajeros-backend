@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, UploadFile, File
 import requests
 import csv
 import os
+import shutil
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -12,6 +14,12 @@ CLIENT_ID = "1_5i50wo24kpcscc0okw0ww4gsc8kwg0k8gs0ok44skooww4swcg"
 CLIENT_SECRET = "18qxs6584gw08scg8wsk8gow44oc4gcw40c4o8w44880g0gkcg"
 LOGIN_ID = 2017
 SITE_ID = "86240"
+
+# Paths de guardado
+TELEFONOS_CSV = "telefonos.csv"
+COMPROBANTES_CSV = "comprobantes.csv"
+COMPROBANTES_DIR = "comprobantes"
+os.makedirs(COMPROBANTES_DIR, exist_ok=True)
 
 def get_token():
     url = "https://admin.flowbets.co/oauth/v2/token"
@@ -32,13 +40,30 @@ def get_token():
         return None
 
 def guardar_telefono(username, telefono):
-    archivo = "telefonos.csv"
-    existe = os.path.exists(archivo)
-    with open(archivo, mode="a", newline="") as f:
+    existe = os.path.exists(TELEFONOS_CSV)
+    with open(TELEFONOS_CSV, mode="a", newline="") as f:
         writer = csv.writer(f)
         if not existe:
             writer.writerow(["username", "telefono"])
         writer.writerow([username, telefono])
+
+def comprobar_comprobante_usado(nombre_archivo):
+    if not os.path.exists(COMPROBANTES_CSV):
+        return False
+    with open(COMPROBANTES_CSV, mode="r") as f:
+        reader = csv.reader(f)
+        for fila in reader:
+            if nombre_archivo in fila:
+                return True
+    return False
+
+def guardar_comprobante(username, nombre_archivo):
+    existe = os.path.exists(COMPROBANTES_CSV)
+    with open(COMPROBANTES_CSV, mode="a", newline="") as f:
+        writer = csv.writer(f)
+        if not existe:
+            writer.writerow(["username", "comprobante"])
+        writer.writerow([username, nombre_archivo])
 
 @app.post("/crear_usuario")
 def crear_usuario(
@@ -92,3 +117,22 @@ def crear_usuario(
             "message": "Error inesperado",
             "detalle": str(e)
         }
+
+@app.post("/cargar")
+def cargar_fichas(
+    username: str = Form(...),
+    monto: int = Form(...),
+    comprobante: UploadFile = File(...)
+):
+    filename = comprobante.filename
+    if comprobar_comprobante_usado(filename):
+        return JSONResponse(status_code=400, content={"success": False, "message": "Este comprobante ya fue usado."})
+
+    ruta_archivo = os.path.join(COMPROBANTES_DIR, filename)
+    with open(ruta_archivo, "wb") as buffer:
+        shutil.copyfileobj(comprobante.file, buffer)
+
+    guardar_comprobante(username, filename)
+
+    return {"success": True, "message": "Fichas cargadas exitosamente"}
+
