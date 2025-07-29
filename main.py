@@ -2,13 +2,16 @@ from fastapi import FastAPI, Form
 import requests
 import csv
 import os
+from datetime import datetime
 
 app = FastAPI()
 
+# 🔁 DATOS DEL CAJERO – CAMBIAR ESTO PARA CADA PANEL
 USERNAME = "rosario"
 PASSWORD = "luciano151418"
 CLIENT_ID = "1_5i50wo24kpcscc0okw0ww4gsc8kwg0k8gs0ok44skooww4swcg"
 CLIENT_SECRET = "18qxs6584gw08scg8wsk8gow44oc4gcw40c4o8w44880g0gkcg"
+NOMBRE_CAJERO = "rosario"  # Nombre usado para guardar archivo único por cajero
 
 def get_token():
     url = "https://admin.flowbets.co/oauth/v2/token"
@@ -29,13 +32,14 @@ def get_token():
         return None
 
 def guardar_telefono(username, telefono):
-    archivo = "telefonos.csv"
+    archivo = f"{NOMBRE_CAJERO}_telefonos.csv"
     existe = os.path.isfile(archivo)
+    fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(archivo, mode="a", newline="") as f:
         writer = csv.writer(f)
         if not existe:
-            writer.writerow(["username", "telefono"])
-        writer.writerow([username, telefono])
+            writer.writerow(["username", "telefono", "fecha_hora"])
+        writer.writerow([username, telefono, fecha_hora])
 
 @app.post("/crear_usuario")
 def crear_usuario(
@@ -48,8 +52,7 @@ def crear_usuario(
     if not token:
         return {"error": "No se pudo obtener el token"}
 
-    # ✅ Guardar teléfono para marketing futuro
-    guardar_telefono(username, telefono)
+    guardar_telefono(username, telefono)  # ✅ Guarda también la hora
 
     headers = {
         "Authorization": f"Bearer {token}",
