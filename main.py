@@ -1,3 +1,6 @@
+# BACKEND (main.py con FastAPI)
+# Este es el backend que debe estar ya funcionando en Railway, lo dejamos final listo
+
 from fastapi import FastAPI, Form, UploadFile, File
 import requests
 import csv
@@ -7,7 +10,6 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-# Credenciales
 USERNAME = "rosario"
 PASSWORD = "luciano151418"
 CLIENT_ID = "1_5i50wo24kpcscc0okw0ww4gsc8kwg0k8gs0ok44skooww4swcg"
@@ -15,7 +17,6 @@ CLIENT_SECRET = "18qxs6584gw08scg8wsk8gow44oc4gcw40c4o8w44880g0gkcg"
 LOGIN_ID = 2017
 SITE_ID = "86240"
 
-# Paths de guardado
 TELEFONOS_CSV = "telefonos.csv"
 COMPROBANTES_CSV = "comprobantes.csv"
 COMPROBANTES_DIR = "comprobantes"
@@ -124,6 +125,9 @@ def cargar_fichas(
     monto: int = Form(...),
     comprobante: UploadFile = File(...)
 ):
+    if monto < 1000:
+        return JSONResponse(status_code=400, content={"success": False, "message": "El monto mínimo es de $1.000."})
+
     filename = comprobante.filename
     if comprobar_comprobante_usado(filename):
         return JSONResponse(status_code=400, content={"success": False, "message": "Este comprobante ya fue usado."})
@@ -135,4 +139,3 @@ def cargar_fichas(
     guardar_comprobante(username, filename)
 
     return {"success": True, "message": "Fichas cargadas exitosamente"}
-
