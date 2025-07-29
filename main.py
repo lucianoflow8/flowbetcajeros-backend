@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Form
 import requests
 
@@ -8,23 +7,26 @@ USERNAME = "rosario"
 PASSWORD = "luciano151418"
 
 def get_token():
-    login_url = "https://agentes.flowbets.co/api/auth/login"
+    session = requests.Session()
+
     data = {
         "username": USERNAME,
         "password": PASSWORD,
-        "client_id": "web_client",
-        "client_secret": "123456",
-        "grant_type": "password"
+        "client_id": "1_5i80w2o4kpcssc0okw0ww4gsc8kwg8k8gs0ok44skooww4swc8",
+        "client_secret": "18qxs6584g8w085cg8wsk8gow440c4gcw4c40w44880g8gkcg",
+        "grant_type": "password",
+        "source": "pn"
     }
-    try:
-        response = requests.post(login_url, data=data)
-        print("Login status:", response.status_code)
-        print("Login response:", response.text)
-        response.raise_for_status()
-        return response.json().get("access_token")
-    except Exception as e:
-        print("Error al obtener el token:", e)
+
+    token_url = "https://admin.flowbets.co/oauth/v2/token"
+    response = session.post(token_url, data=data)
+
+    if response.status_code != 200:
+        print("Login error:", response.text)
         return None
+
+    tokens = response.json()
+    return tokens.get("access_token")
 
 @app.post("/crear_usuario")
 def crear_usuario(username: str = Form(...), password: str = Form(...)):
