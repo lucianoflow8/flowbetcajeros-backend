@@ -1,6 +1,9 @@
 {
   "mostrar_crear_usuario": true,
   "mostrar_retirar_saldo": true,
-  "promocion_activa": false,
-  "factor_promocion": 1.0
+  "bono_general": 1.0,
+  "usuarios_con_bono": {
+    "usuario1": 2.0,
+    "usuarioVIP": 1.66
+  }
 }
